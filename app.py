@@ -174,9 +174,13 @@ def pagina_inicio(config: dict):
     siguiente = torneo.proximo_partido(todos_partidos)
     tarjeta_hero_proximo_partido(siguiente)
 
-    with st.container(key="tarjeta_info"):
-        st.markdown(f"#### {config.get('nombre_torneo', 'BasketKastil')}")
-        st.write(config.get("descripcion", "Una noche de baloncesto, equipos y comunidad."))
+    st.markdown(
+        f"""<div class="tarjeta">
+            <strong style="color:var(--crema);font-size:1.05rem">{config.get('nombre_torneo', 'BasketKastil')}</strong>
+            <p style="margin-top:6px;color:var(--crema-suave)">{config.get('descripcion', 'Una noche de baloncesto, equipos y comunidad.')}</p>
+        </div>""",
+        unsafe_allow_html=True,
+    )
 
     st.markdown("##### Accesos rápidos")
     columnas = st.columns(2)
@@ -200,12 +204,17 @@ def pagina_inicio(config: dict):
         )
 
     if config.get("contacto_telefono") or config.get("contacto_email"):
-        with st.container(key="tarjeta_contacto"):
-            st.markdown("##### ☎️ Contacto")
-            if config.get("contacto_telefono"):
-                st.write(f"📞 {config['contacto_telefono']}")
-            if config.get("contacto_email"):
-                st.write(f"✉️ {config['contacto_email']}")
+        lineas = []
+        if config.get("contacto_telefono"):
+            lineas.append(f"📞 {config['contacto_telefono']}")
+        if config.get("contacto_email"):
+            lineas.append(f"✉️ {config['contacto_email']}")
+        st.markdown(
+            '<div class="tarjeta"><strong style="color:var(--crema)">☎️ Contacto</strong><br>'
+            + "<br>".join(f'<span style="color:var(--crema-suave)">{l}</span>' for l in lineas)
+            + "</div>",
+            unsafe_allow_html=True,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -480,7 +489,7 @@ def pagina_admin(config: dict):
 # ---------------------------------------------------------------------------
 
 def mostrar_nav_inferior():
-    with st.container(key="nav_inferior"):
+    with st.container():
         columnas = st.columns(len(SECCIONES))
         for col, (clave, icono, etiqueta) in zip(columnas, SECCIONES):
             with col:
