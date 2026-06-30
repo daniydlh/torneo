@@ -1,0 +1,228 @@
+/* =========================================================================
+   style.css — BasketKastil
+   Paleta inspirada en el cartel: cremas, naranja balón, ámbar y marrón tostado
+   ========================================================================= */
+
+:root{
+    --fondo:           #15100c;
+    --fondo-superficie: #1f1712;
+    --tarjeta:         #271c15;
+    --tarjeta-borde:    #3a2a1d;
+    --crema:           #f5e9d6;
+    --crema-suave:     #cdbfa9;
+    --naranja:         #e2672a;
+    --naranja-fuerte:  #c8541f;
+    --ambar:           #f4a93b;
+    --marron:          #6b3a22;
+    --rojo:            #c0392b;
+    --verde:           #4caf6f;
+    --sombra:          0 8px 24px rgba(0,0,0,0.45);
+    --radio:           20px;
+}
+
+/* ---------- Reset general de Streamlit para que no parezca "una web" ---------- */
+
+#MainMenu, header[data-testid="stHeader"], footer {visibility:hidden; height:0;}
+.block-container{
+    padding-top: 1rem !important;
+    padding-bottom: 6.5rem !important;
+    max-width: 720px;
+}
+.stApp{
+    background: radial-gradient(circle at 50% -10%, #2a1d14 0%, var(--fondo) 55%) fixed;
+    color: var(--crema);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+section[data-testid="stSidebar"]{
+    background: var(--fondo-superficie);
+    border-right: 1px solid var(--tarjeta-borde);
+}
+h1,h2,h3,h4{ color: var(--crema); font-weight: 800; }
+p, span, label, .stMarkdown { color: var(--crema-suave); }
+hr{ border-color: var(--tarjeta-borde); }
+
+/* ---------- Cabecera ---------- */
+
+.cabecera-app{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding: 6px 4px 18px 4px;
+    animation: aparecer .5s ease-out;
+}
+.cabecera-app img{
+    width:56px; height:56px; border-radius:16px;
+    box-shadow: var(--sombra);
+}
+.cabecera-app .titulo-torneo{
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--ambar);
+    line-height:1.1;
+}
+.cabecera-app .subtitulo-torneo{
+    font-size: .8rem;
+    color: var(--crema-suave);
+}
+
+/* ---------- Tarjetas genéricas ---------- */
+
+.tarjeta{
+    background: linear-gradient(155deg, var(--tarjeta) 0%, var(--fondo-superficie) 100%);
+    border: 1px solid var(--tarjeta-borde);
+    border-radius: var(--radio);
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: var(--sombra);
+    animation: aparecer .4s ease-out;
+}
+
+/* Contenedores reales de Streamlit (st.container(key=...)) estilizados como tarjeta */
+.st-key-tarjeta_info, .st-key-tarjeta_contacto{
+    background: linear-gradient(155deg, var(--tarjeta) 0%, var(--fondo-superficie) 100%);
+    border: 1px solid var(--tarjeta-borde);
+    border-radius: var(--radio);
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: var(--sombra);
+}
+.tarjeta-foto{
+    background: var(--tarjeta);
+    border: 1px solid var(--tarjeta-borde);
+    border-radius: 16px;
+    padding: 8px;
+    margin-bottom: 12px;
+}
+.pie-foto{
+    font-size: .78rem;
+    color: var(--crema-suave);
+    padding: 8px 2px 4px 2px;
+}
+.boton-descarga{
+    display:block;
+    text-align:center;
+    margin-top: 6px;
+    padding: 8px 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--naranja) 0%, var(--naranja-fuerte) 100%);
+    color: var(--crema) !important;
+    font-weight: 700;
+    font-size: .82rem;
+    text-decoration: none !important;
+}
+
+/* Nota: el estilo de la tarjeta-hero (próximo partido) vive autocontenido
+   dentro del componente HTML/JS de la cuenta atrás (ver tarjeta_hero_proximo_partido
+   en app.py), porque necesita JavaScript real para el reloj en vivo. */
+
+/* ---------- Botones grandes tipo app ---------- */
+
+.stButton > button, .stLinkButton > a, .stDownloadButton > button{
+    background: linear-gradient(135deg, var(--naranja) 0%, var(--naranja-fuerte) 100%) !important;
+    color: var(--crema) !important;
+    border: none !important;
+    border-radius: 14px !important;
+    padding: .65rem 1rem !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 14px rgba(226,103,42,0.35);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.stButton > button:hover, .stLinkButton > a:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(226,103,42,0.5);
+}
+.stButton > button:active{ transform: translateY(0px) scale(.98); }
+
+button[kind="secondary"]{
+    background: var(--tarjeta) !important;
+    border: 1px solid var(--tarjeta-borde) !important;
+}
+
+/* ---------- Inputs ---------- */
+
+.stTextInput input, .stTextArea textarea, .stNumberInput input,
+.stSelectbox div[data-baseweb="select"] > div, .stDateInput input, .stTimeInput input{
+    background: var(--fondo-superficie) !important;
+    color: var(--crema) !important;
+    border: 1px solid var(--tarjeta-borde) !important;
+    border-radius: 12px !important;
+}
+
+/* ---------- Chips de estado de partido ---------- */
+
+.chip{
+    display:inline-block;
+    padding: 3px 12px;
+    border-radius: 999px;
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+.chip-pendiente{ background: rgba(244,169,59,.18); color: var(--ambar); border:1px solid var(--ambar); }
+.chip-en_juego{ background: rgba(192,57,43,.18); color: #ff7a66; border:1px solid var(--rojo); animation: pulso 1.4s infinite; }
+.chip-finalizado{ background: rgba(76,175,111,.18); color: var(--verde); border:1px solid var(--verde); }
+
+/* ---------- Fila de partido (calendario) ---------- */
+
+.fila-partido{
+    display:flex; justify-content:space-between; align-items:center;
+    background: var(--tarjeta);
+    border:1px solid var(--tarjeta-borde);
+    border-radius: 16px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+}
+.fila-partido .hora{ font-weight:800; color:var(--ambar); min-width:54px; }
+.fila-partido .equipos{ font-weight:600; color:var(--crema); }
+.fila-partido .marcador{ font-weight:800; color:var(--crema); font-size:1.05rem; }
+
+/* ---------- Barra de navegación inferior (estilo app móvil) ---------- */
+
+.st-key-nav_inferior{
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(21,16,12,0.92);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--tarjeta-borde);
+    z-index: 999;
+    padding: 6px 14px 4px 14px;
+}
+.st-key-nav_inferior [data-testid="column"]{ display:flex; justify-content:center; }
+.st-key-nav_inferior .stButton > button{
+    box-shadow:none !important;
+    font-size: .68rem !important;
+    border-radius: 12px !important;
+    padding: 6px 4px !important;
+    width: 100%;
+}
+.st-key-nav_inferior button[kind="secondary"]{
+    background: transparent !important;
+    border: none !important;
+    color: var(--crema-suave) !important;
+}
+.st-key-nav_inferior button[kind="primary"]{
+    background: rgba(244,169,59,.14) !important;
+    border: 1px solid var(--ambar) !important;
+    color: var(--ambar) !important;
+}
+
+/* ---------- Animaciones ---------- */
+
+@keyframes aparecer{
+    from{ opacity:0; transform: translateY(8px); }
+    to{ opacity:1; transform: translateY(0); }
+}
+@keyframes pulso{
+    0%{ opacity:1; } 50%{ opacity:.55; } 100%{ opacity:1; }
+}
+
+/* Tablas de clasificación */
+.stDataFrame{ border-radius: 14px !important; overflow:hidden; }
+
+/* Quitar el padding-top extra en pantallas móviles */
+@media (max-width: 640px){
+    .block-container{ padding-left: .8rem !important; padding-right: .8rem !important; }
+    .cabecera-app img{ width:46px; height:46px; }
+    .cabecera-app .titulo-torneo{ font-size: 1.15rem; }
+}
