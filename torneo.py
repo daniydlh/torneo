@@ -48,69 +48,20 @@ def _construir_estadisticas(equipos: list[dict], partidos: list[dict]) -> dict:
     return stats
 
 
-def _promedio_particular(id_equipo: int, ids_empatados: list[int], partidos: list[dict]) -> float:
-    """
-    'Basket average' entre equipos empatados: cociente de puntos a favor / en contra
-    contando ÚNICAMENTE los partidos jugados entre los equipos del grupo empatado.
-    Sirve igual para 2 equipos (resultado del cruce directo) que para 3 o más.
-    """
-    pf, pc = 0, 0
-    for p in partidos:
-        if p.get("estado") != "finalizado":
-            continue
-        if p.get("puntos_local") is None or p.get("puntos_visitante") is None:
-            continue
-        local, visitante = p["equipo_local_id"], p["equipo_visitante_id"]
-        if local == id_equipo and visitante in ids_empatados:
-            pf += p["puntos_local"]
-            pc += p["puntos_visitante"]
-        elif visitante == id_equipo and local in ids_empatados:
-            pf += p["puntos_visitante"]
-            pc += p["puntos_local"]
-    return pf / pc if pc > 0 else 0.0
-
-
-def ordenar_clasificacion(equipos: list[dict], partidos: list[dict], criterio: str = "basket_average") -> list[dict]:
+def ordenar_clasificacion(equipos: list[dict], partidos: list[dict]) -> list[dict]:
     """
     Devuelve la lista de estadísticas ordenada según:
     1) victorias (descendente)
-    2) desempate, según el criterio indicado:
-       - 'basket_average': cociente de puntos entre los equipos empatados.
-         Es el método correcto cuando el grupo es cerrado y todos se han
-         enfrentado entre sí (torneo masculino: grupos de 3).
-       - 'diferencia': diferencia de puntos y, si persiste el empate,
-         puntos a favor. Es el criterio adecuado cuando el calendario no
-         es un grupo cerrado (torneo femenino: partidos creados a mano y
-         no todos los equipos se enfrentan entre sí), ya que dos equipos
-         empatados podrían no haber jugado nunca entre ellos.
+    2) diferencia de puntos a favor menos en contra (descendente)
+    3) puntos a favor, como último desempate (descendente)
+    Mismo criterio para masculino y femenino.
     """
     stats = _construir_estadisticas(equipos, partidos)
-    por_victorias: dict[int, list[dict]] = {}
-    for item in stats.values():
-        por_victorias.setdefault(item["pg"], []).append(item)
-
-    resultado = []
-    for victorias in sorted(por_victorias.keys(), reverse=True):
-        empatados = por_victorias[victorias]
-        if len(empatados) == 1:
-            resultado.extend(empatados)
-            continue
-
-        if criterio == "diferencia":
-            empatados_ordenados = sorted(
-                empatados,
-                key=lambda e: (e["pf"] - e["pc"], e["pf"]),
-                reverse=True,
-            )
-        else:
-            ids_empatados = [e["equipo"]["id"] for e in empatados]
-            empatados_ordenados = sorted(
-                empatados,
-                key=lambda e: _promedio_particular(e["equipo"]["id"], ids_empatados, partidos),
-                reverse=True,
-            )
-        resultado.extend(empatados_ordenados)
-    return resultado
+    return sorted(
+        stats.values(),
+        key=lambda e: (e["pg"], e["pf"] - e["pc"], e["pf"]),
+        reverse=True,
+    )
 
 
 def clasificacion_a_dataframe(clasificacion: list[dict]) -> pd.DataFrame:
@@ -216,10 +167,7 @@ def actualizar_eliminatorias_masculino(equipos: list[dict], partidos: list[dict]
 
 def clasificacion_femenino(equipos: list[dict], partidos: list[dict]) -> pd.DataFrame:
     partidos_grupo = [p for p in partidos if p["fase"] == "grupos"]
-    # Criterio 'diferencia': el calendario femenino no es un grupo cerrado
-    # (partidos manuales, no todos se enfrentan entre sí), así que el basket
-    # average entre empatados no siempre es calculable de forma justa.
-    clasificacion = ordenar_clasificacion(equipos, partidos_grupo, criterio="diferencia")
+    clasificacion = ordenar_clasificacion(equipos, partidos_grupo)
     return clasificacion_a_dataframe(clasificacion)
 
 

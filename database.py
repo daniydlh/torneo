@@ -26,6 +26,7 @@ def _limpiar_cache():
     obtener_partidos.clear()
     obtener_fotos.clear()
     obtener_configuracion.clear()
+    obtener_djs.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -123,15 +124,12 @@ def obtener_fotos(solo_aprobadas: bool = True) -> list[dict]:
     return consulta.execute().data
 
 
-def crear_foto(url, public_id, nombre, equipo, partido_id, comentario) -> None:
+def crear_foto(url, public_id, nombre) -> None:
     cliente = obtener_cliente()
     cliente.table("fotos").insert({
         "url": url,
         "public_id": public_id,
         "nombre": nombre,
-        "equipo": equipo,
-        "partido_id": partido_id,
-        "comentario": comentario,
         "aprobada": False,
     }).execute()
     _limpiar_cache()
@@ -164,4 +162,40 @@ def obtener_configuracion() -> dict:
 def guardar_configuracion(clave: str, valor: str) -> None:
     cliente = obtener_cliente()
     cliente.table("configuracion").upsert({"clave": clave, "valor": valor}).execute()
+    _limpiar_cache()
+
+
+# ---------------------------------------------------------------------------
+# DJs (horario de la noche)
+# ---------------------------------------------------------------------------
+
+@st.cache_data(ttl=30)
+def obtener_djs() -> list[dict]:
+    """Devuelve los DJs ordenados por hora de inicio."""
+    cliente = obtener_cliente()
+    return cliente.table("djs").select("*").order("hora_inicio").execute().data
+
+
+def crear_dj(nombre: str, hora_inicio: str, hora_fin: str, estilo: str, logo_url: str, logo_public_id: str) -> None:
+    cliente = obtener_cliente()
+    cliente.table("djs").insert({
+        "nombre": nombre,
+        "hora_inicio": hora_inicio,
+        "hora_fin": hora_fin,
+        "estilo": estilo,
+        "logo_url": logo_url,
+        "logo_public_id": logo_public_id,
+    }).execute()
+    _limpiar_cache()
+
+
+def actualizar_dj(id_dj: int, **campos) -> None:
+    cliente = obtener_cliente()
+    cliente.table("djs").update(campos).eq("id", id_dj).execute()
+    _limpiar_cache()
+
+
+def eliminar_dj(id_dj: int) -> None:
+    cliente = obtener_cliente()
+    cliente.table("djs").delete().eq("id", id_dj).execute()
     _limpiar_cache()

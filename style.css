@@ -1,22 +1,22 @@
 /* =========================================================================
    style.css — BasketKastil
-   Paleta inspirada en el cartel: cremas, naranja balón, ámbar y marrón tostado
+   Tema claro: crema/beige de fondo, naranja y ámbar del logo como acento
    ========================================================================= */
 
 :root{
-    --fondo:           #15100c;
-    --fondo-superficie: #1f1712;
-    --tarjeta:         #271c15;
-    --tarjeta-borde:    #3a2a1d;
-    --crema:           #f5e9d6;
-    --crema-suave:     #cdbfa9;
+    --fondo:           #fbf1e1;
+    --fondo-superficie: #f5e6cf;
+    --tarjeta:         #ffffff;
+    --tarjeta-borde:    #ecd9b8;
+    --crema:           #3a2a1a;
+    --crema-suave:     #7a6650;
     --naranja:         #e2672a;
     --naranja-fuerte:  #c8541f;
     --ambar:           #f4a93b;
     --marron:          #6b3a22;
     --rojo:            #c0392b;
     --verde:           #4caf6f;
-    --sombra:          0 8px 24px rgba(0,0,0,0.45);
+    --sombra:          0 6px 18px rgba(200,150,80,0.18);
     --radio:           20px;
 }
 
@@ -29,7 +29,7 @@
     max-width: 720px;
 }
 .stApp{
-    background: radial-gradient(circle at 50% -10%, #2a1d14 0%, var(--fondo) 55%) fixed;
+    background: var(--fondo);
     color: var(--crema);
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
@@ -37,7 +37,7 @@ section[data-testid="stSidebar"]{
     background: var(--fondo-superficie);
     border-right: 1px solid var(--tarjeta-borde);
 }
-h1,h2,h3,h4{ color: var(--crema); font-weight: 800; }
+h1,h2,h3,h4{ color: var(--naranja-fuerte); font-weight: 800; }
 p, span, label, .stMarkdown { color: var(--crema-suave); }
 hr{ border-color: var(--tarjeta-borde); }
 
@@ -57,7 +57,7 @@ hr{ border-color: var(--tarjeta-borde); }
 .cabecera-app .titulo-torneo{
     font-size: 1.35rem;
     font-weight: 800;
-    color: var(--ambar);
+    color: var(--naranja-fuerte);
     line-height:1.1;
 }
 .cabecera-app .subtitulo-torneo{
@@ -68,7 +68,7 @@ hr{ border-color: var(--tarjeta-borde); }
 /* ---------- Tarjetas genéricas ---------- */
 
 .tarjeta{
-    background: linear-gradient(155deg, var(--tarjeta) 0%, var(--fondo-superficie) 100%);
+    background: var(--tarjeta);
     border: 1px solid var(--tarjeta-borde);
     border-radius: var(--radio);
     padding: 18px;
@@ -77,9 +77,8 @@ hr{ border-color: var(--tarjeta-borde); }
     animation: aparecer .4s ease-out;
 }
 
-/* Contenedores reales de Streamlit (st.container(key=...)) estilizados como tarjeta */
 .st-key-tarjeta_info, .st-key-tarjeta_contacto{
-    background: linear-gradient(155deg, var(--tarjeta) 0%, var(--fondo-superficie) 100%);
+    background: var(--tarjeta);
     border: 1px solid var(--tarjeta-borde);
     border-radius: var(--radio);
     padding: 18px;
@@ -105,44 +104,62 @@ hr{ border-color: var(--tarjeta-borde); }
     padding: 8px 0;
     border-radius: 12px;
     background: linear-gradient(135deg, var(--naranja) 0%, var(--naranja-fuerte) 100%);
-    color: var(--crema) !important;
+    color: #fff !important;
     font-weight: 700;
     font-size: .82rem;
     text-decoration: none !important;
 }
 
-/* Nota: el estilo de la tarjeta-hero (próximo partido) vive autocontenido
-   dentro del componente HTML/JS de la cuenta atrás (ver tarjeta_hero_proximo_partido
-   en app.py), porque necesita JavaScript real para el reloj en vivo. */
+/* ---------- DJs ---------- */
+
+.tarjeta-dj{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background: var(--tarjeta);
+    border: 1px solid var(--tarjeta-borde);
+    border-radius: 16px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    box-shadow: var(--sombra);
+}
+.tarjeta-dj img{
+    width:56px; height:56px; border-radius:50%; object-fit:cover;
+    box-shadow: var(--sombra);
+}
+.tarjeta-dj .nombre-dj{ font-weight:800; color:var(--naranja-fuerte); font-size:1.02rem; }
+.tarjeta-dj .horario-dj{ font-weight:700; color:var(--crema); font-size:.85rem; }
+.tarjeta-dj .estilo-dj{ font-size:.78rem; color:var(--crema-suave); }
 
 /* ---------- Botones grandes tipo app ---------- */
 
 .stButton > button, .stLinkButton > a, .stDownloadButton > button{
     background: linear-gradient(135deg, var(--naranja) 0%, var(--naranja-fuerte) 100%) !important;
-    color: var(--crema) !important;
+    color: #fff !important;
     border: none !important;
     border-radius: 14px !important;
     padding: .65rem 1rem !important;
     font-weight: 700 !important;
-    box-shadow: 0 4px 14px rgba(226,103,42,0.35);
+    box-shadow: 0 4px 14px rgba(226,103,42,0.25);
     transition: transform .15s ease, box-shadow .15s ease;
 }
 .stButton > button:hover, .stLinkButton > a:hover{
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(226,103,42,0.5);
+    box-shadow: 0 8px 20px rgba(226,103,42,0.35);
 }
 .stButton > button:active{ transform: translateY(0px) scale(.98); }
 
 button[kind="secondary"]{
     background: var(--tarjeta) !important;
     border: 1px solid var(--tarjeta-borde) !important;
+    color: var(--crema) !important;
 }
 
 /* ---------- Inputs ---------- */
 
 .stTextInput input, .stTextArea textarea, .stNumberInput input,
 .stSelectbox div[data-baseweb="select"] > div, .stDateInput input, .stTimeInput input{
-    background: var(--fondo-superficie) !important;
+    background: var(--tarjeta) !important;
     color: var(--crema) !important;
     border: 1px solid var(--tarjeta-borde) !important;
     border-radius: 12px !important;
@@ -159,9 +176,9 @@ button[kind="secondary"]{
     text-transform: uppercase;
     letter-spacing: .03em;
 }
-.chip-pendiente{ background: rgba(244,169,59,.18); color: var(--ambar); border:1px solid var(--ambar); }
-.chip-en_juego{ background: rgba(192,57,43,.18); color: #ff7a66; border:1px solid var(--rojo); animation: pulso 1.4s infinite; }
-.chip-finalizado{ background: rgba(76,175,111,.18); color: var(--verde); border:1px solid var(--verde); }
+.chip-pendiente{ background: rgba(244,169,59,.18); color: var(--naranja-fuerte); border:1px solid var(--ambar); }
+.chip-en_juego{ background: rgba(192,57,43,.12); color: var(--rojo); border:1px solid var(--rojo); animation: pulso 1.4s infinite; }
+.chip-finalizado{ background: rgba(76,175,111,.14); color: var(--verde); border:1px solid var(--verde); }
 
 /* ---------- Fila de partido (calendario) ---------- */
 
@@ -172,8 +189,9 @@ button[kind="secondary"]{
     border-radius: 16px;
     padding: 12px 16px;
     margin-bottom: 10px;
+    box-shadow: var(--sombra);
 }
-.fila-partido .hora{ font-weight:800; color:var(--ambar); min-width:54px; }
+.fila-partido .hora{ font-weight:800; color:var(--naranja-fuerte); min-width:54px; }
 .fila-partido .equipos{ font-weight:600; color:var(--crema); }
 .fila-partido .marcador{ font-weight:800; color:var(--crema); font-size:1.05rem; }
 
@@ -182,7 +200,7 @@ button[kind="secondary"]{
 .st-key-nav_inferior{
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    background: rgba(21,16,12,0.92);
+    background: rgba(251,241,225,0.95);
     backdrop-filter: blur(10px);
     border-top: 1px solid var(--tarjeta-borde);
     z-index: 999;
@@ -202,9 +220,9 @@ button[kind="secondary"]{
     color: var(--crema-suave) !important;
 }
 .st-key-nav_inferior button[kind="primary"]{
-    background: rgba(244,169,59,.14) !important;
+    background: rgba(244,169,59,.18) !important;
     border: 1px solid var(--ambar) !important;
-    color: var(--ambar) !important;
+    color: var(--naranja-fuerte) !important;
 }
 
 /* ---------- Animaciones ---------- */

@@ -51,19 +51,11 @@ def eliminar_imagen(public_id: str) -> None:
 # Componentes de interfaz
 # ---------------------------------------------------------------------------
 
-def formulario_subida(equipos: list[dict], partidos: list[dict]):
+def formulario_subida(equipos: list[dict] = None, partidos: list[dict] = None):
     st.markdown("#### 📤 Subir una fotografía")
     with st.form("formulario_subida_foto", clear_on_submit=True):
         archivo = st.file_uploader("Elige una imagen", type=["jpg", "jpeg", "png", "webp"])
         nombre = st.text_input("Tu nombre (opcional)")
-        opciones_equipo = ["—"] + sorted({e["nombre"] for e in equipos})
-        equipo = st.selectbox("Equipo relacionado (opcional)", opciones_equipo)
-        opciones_partido = ["—"] + [
-            f"{p['id']} · {p.get('local', {}).get('nombre', '?')} vs {p.get('visitante', {}).get('nombre', '?')}"
-            for p in partidos
-        ]
-        partido_sel = st.selectbox("Partido relacionado (opcional)", opciones_partido)
-        comentario = st.text_area("Comentario (opcional)", max_chars=200)
         enviado = st.form_submit_button("📸 Enviar fotografía", use_container_width=True)
 
         if enviado:
@@ -72,17 +64,7 @@ def formulario_subida(equipos: list[dict], partidos: list[dict]):
                 return
             with st.spinner("Subiendo imagen..."):
                 url, public_id = subir_imagen(archivo)
-                partido_id = None
-                if partido_sel != "—":
-                    partido_id = int(partido_sel.split(" · ")[0])
-                bd.crear_foto(
-                    url=url,
-                    public_id=public_id,
-                    nombre=nombre or None,
-                    equipo=None if equipo == "—" else equipo,
-                    partido_id=partido_id,
-                    comentario=comentario or None,
-                )
+                bd.crear_foto(url=url, public_id=public_id, nombre=nombre or None)
             st.success("¡Foto enviada! Quedará visible cuando un administrador la apruebe. 🎉")
 
 
@@ -96,9 +78,7 @@ def mostrar_galeria(fotos: list[dict], columnas: int = 3):
         cols = st.columns(columnas)
         for col, foto in zip(cols, fila):
             with col:
-                pie = foto.get("equipo") or ""
-                if foto.get("comentario"):
-                    pie = f"{pie} — {foto['comentario']}" if pie else foto["comentario"]
+                pie = foto.get("nombre") or ""
                 pie_html = f'<div class="pie-foto">{pie}</div>' if pie else ""
                 st.markdown(
                     f"""
@@ -126,8 +106,7 @@ def panel_moderacion_fotos():
             with c1:
                 st.image(foto["url"], use_container_width=True)
             with c2:
-                st.write(f"**Equipo:** {foto.get('equipo') or '—'}")
-                st.write(f"**Comentario:** {foto.get('comentario') or '—'}")
+                st.write(f"**Nombre:** {foto.get('nombre') or '—'}")
                 ca, cb = st.columns(2)
                 if ca.button("✅ Aprobar", key=f"aprobar_{foto['id']}", use_container_width=True):
                     bd.aprobar_foto(foto["id"])
@@ -147,7 +126,7 @@ def panel_moderacion_fotos():
         with c1:
             st.image(foto["url"], use_container_width=True)
         with c2:
-            st.write(f"**Equipo:** {foto.get('equipo') or '—'}")
+            st.write(f"**Nombre:** {foto.get('nombre') or '—'}")
             if st.button("🗑️ Eliminar", key=f"borrar_aprob_{foto['id']}"):
                 eliminar_imagen(foto["public_id"])
                 bd.eliminar_foto(foto["id"])

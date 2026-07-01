@@ -43,7 +43,6 @@ SECCIONES = [
     ("femenino", "🏀", "Fem."),
     ("calendario", "📅", "Calendario"),
     ("galeria", "📸", "Galería"),
-    ("djs", "🎧", "DJs"),
     ("admin", "🔑", "Admin"),
 ]
 
@@ -65,15 +64,13 @@ def mostrar_cabecera(config: dict):
     nombre_torneo = config.get("nombre_torneo", "BasketKastil")
     st.markdown(
         f"""
-        <a href="?pagina=quienes_somos" style="text-decoration:none;color:inherit;">
-            <div class="cabecera-app">
-                <img src="data:image/png;base64,{_logo_base64()}">
-                <div>
-                    <div class="titulo-torneo">{nombre_torneo}</div>
-                    <div class="subtitulo-torneo">Torneo nocturno de baloncesto 5x5 · ¿Quiénes somos?</div>
-                </div>
+        <div class="cabecera-app">
+            <img src="data:image/png;base64,{_logo_base64()}">
+            <div>
+                <div class="titulo-torneo">{nombre_torneo}</div>
+                <div class="subtitulo-torneo">Torneo nocturno de baloncesto 5x5</div>
             </div>
-        </a>
+        </div>
         """,
         unsafe_allow_html=True,
     )
@@ -82,17 +79,6 @@ def mostrar_cabecera(config: dict):
 # ---------------------------------------------------------------------------
 # Componentes pequeños reutilizables
 # ---------------------------------------------------------------------------
-
-def parsear_hora(texto: str) -> time_cls | None:
-    """Convierte un texto tipo '19:37' o '9:5' en un objeto time. Devuelve None si no es válido."""
-    texto = (texto or "").strip()
-    for formato in ("%H:%M", "%H.%M"):
-        try:
-            return datetime.strptime(texto, formato).time()
-        except ValueError:
-            continue
-    return None
-
 
 def chip_estado(estado: str) -> str:
     etiquetas = {"pendiente": "Pendiente", "en_juego": "En juego", "finalizado": "Finalizado"}
@@ -120,14 +106,77 @@ def fila_partido_html(p: dict, mostrar_categoria: bool = False) -> str:
     """
 
 
+def tarjeta_hero_proximo_partido(siguiente: dict | None):
+    """Tarjeta destacada con el próximo partido y cuenta atrás en vivo.
+    Se construye como un único bloque HTML/JS autocontenido (vía components.html)
+    para poder animar el reloj con JavaScript real."""
+    if siguiente:
+        local = torneo.nombre_equipo(siguiente, "local")
+        visitante = torneo.nombre_equipo(siguiente, "visitante")
+        subtitulo = f"{siguiente['fase'].capitalize()} · {siguiente['categoria'].capitalize()}"
+        objetivo_js = f'new Date("{siguiente["fecha_hora"]}").getTime()'
+        reloj_inicial = "--:--:--"
+    else:
+        local, visitante, subtitulo = "Por confirmar", "", "Aún no hay próximo partido programado"
+        objetivo_js = "null"
+        reloj_inicial = ""
+
+    components.html(
+        f"""
+        <div class="tarjeta-hero">
+            <div class="equipos-vs">🏀 {local}{' vs ' + visitante if visitante else ''}</div>
+            <div class="subtitulo">{subtitulo}</div>
+            <div id="reloj" class="reloj">{reloj_inicial}</div>
+        </div>
+        <script>
+        const objetivo = {objetivo_js};
+        function actualizar() {{
+            const el = document.getElementById("reloj");
+            if (!objetivo) {{ return; }}
+            const diff = objetivo - new Date().getTime();
+            if (diff <= 0) {{ el.innerHTML = "¡Ya está en juego!"; return; }}
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            el.innerHTML = String(h).padStart(2,'0') + ":" + String(m).padStart(2,'0') + ":" + String(s).padStart(2,'0');
+        }}
+        actualizar();
+        setInterval(actualizar, 1000);
+        </script>
+        <style>
+            html, body {{ background: transparent !important; margin:0; }}
+            .tarjeta-hero{{
+                background: linear-gradient(135deg, #c8541f 0%, #f4a93b 100%);
+                border-radius: 26px;
+                padding: 20px;
+                color:#1a1208;
+                font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+                box-shadow: 0 10px 30px rgba(226,103,42,0.35);
+            }}
+            .equipos-vs{{ font-size:1.2rem; font-weight:800; }}
+            .subtitulo{{ font-size:.8rem; opacity:.85; margin-top:2px; }}
+            .reloj{{
+                font-size: 2.1rem; font-weight:900; letter-spacing: 1px;
+                font-family: 'Courier New', monospace; margin-top:10px;
+            }}
+        </style>
+        """,
+        height=165,
+    )
+
+
 # ---------------------------------------------------------------------------
 # PÁGINA · INICIO
 # ---------------------------------------------------------------------------
 
 def pagina_inicio(config: dict):
+    todos_partidos = bd.obtener_partidos()
+    siguiente = torneo.proximo_partido(todos_partidos)
+    tarjeta_hero_proximo_partido(siguiente)
+
     st.markdown(
         f"""<div class="tarjeta">
-            <strong style="color:var(--naranja-fuerte);font-size:1.05rem">{config.get('nombre_torneo', 'BasketKastil')}</strong>
+            <strong style="color:var(--crema);font-size:1.05rem">{config.get('nombre_torneo', 'BasketKastil')}</strong>
             <p style="margin-top:6px;color:var(--crema-suave)">{config.get('descripcion', 'Una noche de baloncesto, equipos y comunidad.')}</p>
         </div>""",
         unsafe_allow_html=True,
@@ -138,7 +187,6 @@ def pagina_inicio(config: dict):
     accesos = [
         ("🏀 Masculino", "masculino"), ("🏀 Femenino", "femenino"),
         ("📅 Calendario", "calendario"), ("📸 Galería", "galeria"),
-        ("🎧 DJs", "djs"),
     ]
     for i, (etiqueta, destino) in enumerate(accesos):
         with columnas[i % 2]:
@@ -167,22 +215,6 @@ def pagina_inicio(config: dict):
             + "</div>",
             unsafe_allow_html=True,
         )
-
-
-# ---------------------------------------------------------------------------
-# PÁGINA · ¿QUIÉNES SOMOS?
-# ---------------------------------------------------------------------------
-
-def pagina_quienes_somos(config: dict):
-    st.markdown("### 🧡 ¿Quiénes somos?")
-    texto = config.get("quienes_somos", "Aún no hemos añadido esta información. El administrador puede editarla desde el panel de Configuración.")
-    st.markdown(
-        f"""<div class="tarjeta"><p style="color:var(--crema-suave);white-space:pre-wrap">{texto}</p></div>""",
-        unsafe_allow_html=True,
-    )
-    if st.button("⬅️ Volver al inicio"):
-        ir_a("inicio")
-        st.rerun()
 
 
 # ---------------------------------------------------------------------------
@@ -296,34 +328,9 @@ def pagina_galeria():
         fotos = bd.obtener_fotos(solo_aprobadas=True)
         gallery.mostrar_galeria(fotos)
     with pestaña_subir:
-        gallery.formulario_subida()
-
-
-# ---------------------------------------------------------------------------
-# PÁGINA · DJs
-# ---------------------------------------------------------------------------
-
-def fila_dj_html(dj: dict) -> str:
-    return f"""
-    <div class="tarjeta-dj">
-        <img src="{dj['logo_url']}">
-        <div>
-            <div class="nombre-dj">{dj['nombre']}</div>
-            <div class="horario-dj">{dj['hora_inicio']} – {dj['hora_fin']}</div>
-            <div class="estilo-dj">{dj.get('estilo') or ''}</div>
-        </div>
-    </div>
-    """
-
-
-def pagina_djs():
-    st.markdown("### 🎧 Horario de DJs")
-    djs = bd.obtener_djs()
-    if not djs:
-        st.info("Todavía no hay DJs programados.")
-        return
-    for dj in djs:
-        st.markdown(fila_dj_html(dj), unsafe_allow_html=True)
+        equipos = bd.obtener_equipos()
+        partidos = bd.obtener_partidos()
+        gallery.formulario_subida(equipos, partidos)
 
 
 # ---------------------------------------------------------------------------
@@ -388,19 +395,15 @@ def panel_partidos():
             visitante = col2.selectbox("Equipo visitante", [n for n in nombres_equipos if n != local], key="np_visitante")
             fase = st.selectbox("Fase", ["grupos", "semifinal", "final"], key="np_fase")
             fecha_sel = st.date_input("Fecha", value=date.today(), key="np_fecha")
-            hora_texto = st.text_input("Hora (formato 24h, ej. 19:37)", value="20:00", key="np_hora")
+            hora_sel = st.time_input("Hora", value=time_cls(20, 0), key="np_hora")
             if st.button("Crear partido", key="np_crear"):
-                hora_sel = parsear_hora(hora_texto)
-                if hora_sel is None:
-                    st.warning("Introduce una hora válida, por ejemplo 19:37.")
-                else:
-                    id_local = next(e["id"] for e in equipos_cat if e["nombre"] == local)
-                    id_visitante = next(e["id"] for e in equipos_cat if e["nombre"] == visitante)
-                    grupo = next((e["grupo"] for e in equipos_cat if e["nombre"] == local), None) if fase == "grupos" else None
-                    fecha_hora = datetime.combine(fecha_sel, hora_sel).isoformat()
-                    bd.crear_partido(categoria, fase, id_local, id_visitante, fecha_hora, grupo)
-                    st.success("Partido creado.")
-                    st.rerun()
+                id_local = next(e["id"] for e in equipos_cat if e["nombre"] == local)
+                id_visitante = next(e["id"] for e in equipos_cat if e["nombre"] == visitante)
+                grupo = next((e["grupo"] for e in equipos_cat if e["nombre"] == local), None) if fase == "grupos" else None
+                fecha_hora = datetime.combine(fecha_sel, hora_sel).isoformat()
+                bd.crear_partido(categoria, fase, id_local, id_visitante, fecha_hora, grupo)
+                st.success("Partido creado.")
+                st.rerun()
 
     st.markdown("##### Editar partidos existentes")
     filtro_cat = st.selectbox("Filtrar categoría", ["Todas", "masculino", "femenino"], key="ep_filtro")
@@ -420,24 +423,16 @@ def panel_partidos():
             )
             fecha_actual = datetime.fromisoformat(str(p["fecha_hora"]).replace("Z", ""))
             nueva_fecha = st.date_input("Fecha", value=fecha_actual.date(), key=f"fecha_{p['id']}")
-            nueva_hora_texto = st.text_input(
-                "Hora (formato 24h, ej. 19:37)",
-                value=fecha_actual.strftime("%H:%M"),
-                key=f"hora_{p['id']}",
-            )
+            nueva_hora = st.time_input("Hora", value=fecha_actual.time(), key=f"hora_{p['id']}")
             cguardar, cborrar = st.columns(2)
             if cguardar.button("💾 Guardar cambios", key=f"guardar_partido_{p['id']}", use_container_width=True):
-                nueva_hora = parsear_hora(nueva_hora_texto)
-                if nueva_hora is None:
-                    st.warning("Introduce una hora válida, por ejemplo 19:37.")
-                else:
-                    bd.actualizar_partido(
-                        p["id"],
-                        puntos_local=int(pl), puntos_visitante=int(pv), estado=estado,
-                        fecha_hora=datetime.combine(nueva_fecha, nueva_hora).isoformat(),
-                    )
-                    st.success("Partido actualizado.")
-                    st.rerun()
+                bd.actualizar_partido(
+                    p["id"],
+                    puntos_local=int(pl), puntos_visitante=int(pv), estado=estado,
+                    fecha_hora=datetime.combine(nueva_fecha, nueva_hora).isoformat(),
+                )
+                st.success("Partido actualizado.")
+                st.rerun()
             if cborrar.button("🗑️ Eliminar partido", key=f"borrar_partido_{p['id']}", use_container_width=True):
                 bd.eliminar_partido(p["id"])
                 st.rerun()
@@ -451,76 +446,14 @@ def panel_configuracion(config: dict):
         direccion = st.text_input("Dirección / ubicación", value=config.get("ubicacion_direccion", ""))
         telefono = st.text_input("Teléfono de contacto", value=config.get("contacto_telefono", ""))
         email = st.text_input("Email de contacto", value=config.get("contacto_email", ""))
-        quienes_somos = st.text_area("Texto de '¿Quiénes somos?'", value=config.get("quienes_somos", ""), height=160)
         if st.form_submit_button("Guardar configuración"):
             bd.guardar_configuracion("nombre_torneo", nombre_torneo)
             bd.guardar_configuracion("descripcion", descripcion)
             bd.guardar_configuracion("ubicacion_direccion", direccion)
             bd.guardar_configuracion("contacto_telefono", telefono)
             bd.guardar_configuracion("contacto_email", email)
-            bd.guardar_configuracion("quienes_somos", quienes_somos)
             st.success("Configuración guardada.")
             st.rerun()
-
-
-def panel_djs():
-    st.markdown("#### 🎧 DJs")
-    djs = bd.obtener_djs()
-
-    with st.expander("➕ Añadir DJ"):
-        nombre = st.text_input("Nombre del DJ", key="nuevo_dj_nombre")
-        c1, c2 = st.columns(2)
-        hora_inicio = c1.text_input("Hora inicio (ej. 22:00)", key="nuevo_dj_inicio")
-        hora_fin = c2.text_input("Hora fin (ej. 23:30)", key="nuevo_dj_fin")
-        estilo = st.text_input("Descripción / estilo musical", key="nuevo_dj_estilo")
-        logo = st.file_uploader("Logo del DJ", type=["jpg", "jpeg", "png", "webp"], key="nuevo_dj_logo")
-        if st.button("Guardar DJ", key="guardar_nuevo_dj"):
-            hi, hf = parsear_hora(hora_inicio), parsear_hora(hora_fin)
-            if not nombre.strip():
-                st.warning("Escribe un nombre.")
-            elif hi is None or hf is None:
-                st.warning("Introduce horas válidas, por ejemplo 22:00.")
-            elif not logo:
-                st.warning("Sube un logo para el DJ.")
-            else:
-                url, public_id = gallery.subir_imagen(logo, carpeta="torneo_baloncesto/djs")
-                bd.crear_dj(nombre.strip(), hi.strftime("%H:%M"), hf.strftime("%H:%M"), estilo.strip(), url, public_id)
-                st.success(f"DJ '{nombre}' añadido.")
-                st.rerun()
-
-    for dj in djs:
-        with st.expander(f"{dj['nombre']} · {dj['hora_inicio']}–{dj['hora_fin']}"):
-            c1, c2 = st.columns(2)
-            nuevo_nombre = c1.text_input("Nombre", value=dj["nombre"], key=f"dj_nombre_{dj['id']}")
-            nuevo_estilo = c2.text_input("Estilo", value=dj.get("estilo") or "", key=f"dj_estilo_{dj['id']}")
-            c3, c4 = st.columns(2)
-            nueva_inicio = c3.text_input("Hora inicio", value=dj["hora_inicio"], key=f"dj_inicio_{dj['id']}")
-            nueva_fin = c4.text_input("Hora fin", value=dj["hora_fin"], key=f"dj_fin_{dj['id']}")
-            nuevo_logo = st.file_uploader("Cambiar logo (opcional)", type=["jpg", "jpeg", "png", "webp"], key=f"dj_logo_{dj['id']}")
-            cguardar, cborrar = st.columns(2)
-            if cguardar.button("💾 Guardar cambios", key=f"guardar_dj_{dj['id']}", use_container_width=True):
-                hi, hf = parsear_hora(nueva_inicio), parsear_hora(nueva_fin)
-                if hi is None or hf is None:
-                    st.warning("Introduce horas válidas, por ejemplo 22:00.")
-                else:
-                    campos = {
-                        "nombre": nuevo_nombre,
-                        "estilo": nuevo_estilo,
-                        "hora_inicio": hi.strftime("%H:%M"),
-                        "hora_fin": hf.strftime("%H:%M"),
-                    }
-                    if nuevo_logo:
-                        gallery.eliminar_imagen(dj["logo_public_id"])
-                        url, public_id = gallery.subir_imagen(nuevo_logo, carpeta="torneo_baloncesto/djs")
-                        campos["logo_url"] = url
-                        campos["logo_public_id"] = public_id
-                    bd.actualizar_dj(dj["id"], **campos)
-                    st.success("DJ actualizado.")
-                    st.rerun()
-            if cborrar.button("🗑️ Eliminar DJ", key=f"borrar_dj_{dj['id']}", use_container_width=True):
-                gallery.eliminar_imagen(dj["logo_public_id"])
-                bd.eliminar_dj(dj["id"])
-                st.rerun()
 
 
 def pagina_admin(config: dict):
@@ -540,7 +473,7 @@ def pagina_admin(config: dict):
         st.session_state.admin_autenticado = False
         st.rerun()
 
-    pestañas = st.tabs(["Equipos", "Partidos", "Fotos", "DJs", "Configuración"])
+    pestañas = st.tabs(["Equipos", "Partidos", "Fotos", "Configuración"])
     with pestañas[0]:
         panel_equipos()
     with pestañas[1]:
@@ -548,8 +481,6 @@ def pagina_admin(config: dict):
     with pestañas[2]:
         gallery.panel_moderacion_fotos()
     with pestañas[3]:
-        panel_djs()
-    with pestañas[4]:
         panel_configuracion(config)
 
 
@@ -578,18 +509,12 @@ def mostrar_nav_inferior():
 # ---------------------------------------------------------------------------
 
 def main():
-    if "pagina" in st.query_params:
-        st.session_state.pagina = st.query_params["pagina"]
-        st.query_params.clear()
-
     config = bd.obtener_configuracion()
     mostrar_cabecera(config)
 
     pagina = st.session_state.pagina
     if pagina == "inicio":
         pagina_inicio(config)
-    elif pagina == "quienes_somos":
-        pagina_quienes_somos(config)
     elif pagina == "masculino":
         pagina_masculino()
     elif pagina == "femenino":
@@ -598,8 +523,6 @@ def main():
         pagina_calendario()
     elif pagina == "galeria":
         pagina_galeria()
-    elif pagina == "djs":
-        pagina_djs()
     elif pagina == "admin":
         pagina_admin(config)
 
