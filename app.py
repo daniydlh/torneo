@@ -62,16 +62,11 @@ def ir_a(pagina: str):
 # ---------------------------------------------------------------------------
 
 def mostrar_cabecera(config: dict):
-    nombre_torneo = config.get("nombre_torneo", "BasketKastil")
     st.markdown(
         f"""
         <a href="?pagina=quienes_somos" style="text-decoration:none;color:inherit;">
             <div class="cabecera-app">
                 <img src="data:image/png;base64,{_logo_base64()}">
-                <div>
-                    <div class="titulo-torneo">{nombre_torneo}</div>
-                    <div class="subtitulo-torneo">Torneo nocturno de baloncesto 5x5 · ¿Quiénes somos?</div>
-                </div>
             </div>
         </a>
         """,
@@ -125,20 +120,11 @@ def fila_partido_html(p: dict, mostrar_categoria: bool = False) -> str:
 # ---------------------------------------------------------------------------
 
 def pagina_inicio(config: dict):
-    st.markdown(
-        f"""<div class="tarjeta">
-            <strong style="color:var(--naranja-fuerte);font-size:1.05rem">{config.get('nombre_torneo', 'BasketKastil')}</strong>
-            <p style="margin-top:6px;color:var(--crema-suave)">{config.get('descripcion', 'Una noche de baloncesto, equipos y comunidad.')}</p>
-        </div>""",
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("##### Accesos rápidos")
     columnas = st.columns(2)
     accesos = [
-        ("🏀 Masculino", "masculino"), ("🏀 Femenino", "femenino"),
-        ("📅 Calendario", "calendario"), ("📸 Galería", "galeria"),
-        ("🎧 DJs", "djs"),
+        ("🧡 Quiénes somos", "quienes_somos"), ("🏀 Masculino", "masculino"),
+        ("🏀 Femenino", "femenino"), ("📅 Calendario", "calendario"),
+        ("🎧 DJs", "djs"), ("📸 Galería", "galeria"),
     ]
     for i, (etiqueta, destino) in enumerate(accesos):
         with columnas[i % 2]:
