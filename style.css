@@ -45,24 +45,14 @@ hr{ border-color: var(--tarjeta-borde); }
 
 .cabecera-app{
     display:flex;
+    justify-content:center;
     align-items:center;
-    gap:14px;
-    padding: 6px 4px 18px 4px;
+    padding: 10px 4px 18px 4px;
     animation: aparecer .5s ease-out;
 }
 .cabecera-app img{
-    width:56px; height:56px; border-radius:16px;
+    width:84px; height:84px; border-radius:20px;
     box-shadow: var(--sombra);
-}
-.cabecera-app .titulo-torneo{
-    font-size: 1.35rem;
-    font-weight: 800;
-    color: var(--naranja-fuerte);
-    line-height:1.1;
-}
-.cabecera-app .subtitulo-torneo{
-    font-size: .8rem;
-    color: var(--crema-suave);
 }
 
 /* ---------- Tarjetas genéricas ---------- */
@@ -241,6 +231,5 @@ button[kind="secondary"]{
 /* Quitar el padding-top extra en pantallas móviles */
 @media (max-width: 640px){
     .block-container{ padding-left: .8rem !important; padding-right: .8rem !important; }
-    .cabecera-app img{ width:46px; height:46px; }
-    .cabecera-app .titulo-torneo{ font-size: 1.15rem; }
+    .cabecera-app img{ width:150px; height:150px; }
 }

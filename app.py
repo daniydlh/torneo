@@ -122,9 +122,9 @@ def fila_partido_html(p: dict, mostrar_categoria: bool = False) -> str:
 def pagina_inicio(config: dict):
     columnas = st.columns(2)
     accesos = [
-        ("🧡 Quiénes somos", "quienes_somos"), ("🏀 Masculino", "masculino"),
-        ("🏀 Femenino", "femenino"), ("📅 Calendario", "calendario"),
-        ("🎧 DJs", "djs"), ("📸 Galería", "galeria"),
+        ("🧡 ¿Quiénes somos?", "quienes_somos"), ("📅 Calendario", "calendario"),
+        ("🏀 Clasificación Masc.", "masculino"), ("🏀 Clasificación Fem.", "femenino"),
+        ("🎧 Torneo DJs", "djs"), ("📸 Sube tu foto!", "galeria"),
     ]
     for i, (etiqueta, destino) in enumerate(accesos):
         with columnas[i % 2]:
