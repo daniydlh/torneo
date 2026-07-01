@@ -8,7 +8,7 @@ No contiene nada de interfaz: solo cálculo y escritura en base de datos.
 from datetime import datetime, timedelta
 import pandas as pd
 
-import database as bd
+import database1 as bd
 
 GRUPOS_MASCULINO = ["A", "B", "C", "D"]
 

@@ -161,10 +161,42 @@ def pagina_inicio(config: dict):
 # ---------------------------------------------------------------------------
 
 def pagina_quienes_somos(config: dict):
-    st.markdown("### 🧡 ¿Quiénes somos?")
-    texto = config.get("quienes_somos", "Aún no hemos añadido esta información. El administrador puede editarla desde el panel de Configuración.")
+    imagenes = bd.obtener_quienes_somos_imagenes()
+    if imagenes:
+        if len(imagenes) == 1:
+            st.markdown(
+                f"""<img src="{imagenes[0]['url']}" style="width:100%;border-radius:22px;
+                    display:block;margin-bottom:20px;box-shadow:var(--sombra);">""",
+                unsafe_allow_html=True,
+            )
+        else:
+            tarjetas = "".join(
+                f'<img src="{img["url"]}" style="width:100%;height:150px;object-fit:cover;'
+                f'border-radius:16px;box-shadow:var(--sombra);">'
+                for img in imagenes
+            )
+            st.markdown(
+                f"""<div style="display:grid;grid-template-columns:repeat(2,1fr);
+                    gap:10px;margin-bottom:20px;">{tarjetas}</div>""",
+                unsafe_allow_html=True,
+            )
+
+    texto = config.get(
+        "quienes_somos",
+        "Aún no hemos añadido esta información. El administrador puede editarla desde el panel de Configuración.",
+    )
     st.markdown(
-        f"""<div class="tarjeta"><p style="color:var(--crema-suave);white-space:pre-wrap">{texto}</p></div>""",
+        f"""
+        <div style="padding:4px 6px 8px 6px;">
+            <div style="font-size:1.6rem;font-weight:800;color:var(--naranja-fuerte);
+                        letter-spacing:.01em;margin-bottom:10px;">
+                ¿Quiénes somos?
+            </div>
+            <div style="height:3px;width:52px;background:linear-gradient(90deg,var(--naranja),var(--ambar));
+                        border-radius:4px;margin-bottom:18px;"></div>
+            <p style="color:var(--crema-suave);white-space:pre-wrap;line-height:1.7;font-size:1rem;">{texto}</p>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
     if st.button("⬅️ Volver al inicio"):
@@ -432,6 +464,19 @@ def panel_partidos():
 
 def panel_configuracion(config: dict):
     st.markdown("#### ⚙️ Configuración general")
+
+    imagenes = bd.obtener_quienes_somos_imagenes()
+    if imagenes:
+        st.markdown("##### Imágenes de '¿Quiénes somos?'")
+        cols = st.columns(3)
+        for i, img in enumerate(imagenes):
+            with cols[i % 3]:
+                st.image(img["url"], use_container_width=True)
+                if st.button("🗑️", key=f"borrar_qs_img_{img['id']}", use_container_width=True):
+                    gallery.eliminar_imagen(img["public_id"])
+                    bd.eliminar_quienes_somos_imagen(img["id"])
+                    st.rerun()
+
     with st.form("form_configuracion"):
         nombre_torneo = st.text_input("Nombre del torneo", value=config.get("nombre_torneo", "BasketKastil"))
         descripcion = st.text_area("Descripción", value=config.get("descripcion", ""))
@@ -439,6 +484,11 @@ def panel_configuracion(config: dict):
         telefono = st.text_input("Teléfono de contacto", value=config.get("contacto_telefono", ""))
         email = st.text_input("Email de contacto", value=config.get("contacto_email", ""))
         quienes_somos = st.text_area("Texto de '¿Quiénes somos?'", value=config.get("quienes_somos", ""), height=160)
+        imagenes_nuevas = st.file_uploader(
+            "Añadir imágenes del torneo a '¿Quiénes somos?'",
+            type=["jpg", "jpeg", "png", "webp"],
+            accept_multiple_files=True,
+        )
         if st.form_submit_button("Guardar configuración"):
             bd.guardar_configuracion("nombre_torneo", nombre_torneo)
             bd.guardar_configuracion("descripcion", descripcion)
@@ -446,6 +496,9 @@ def panel_configuracion(config: dict):
             bd.guardar_configuracion("contacto_telefono", telefono)
             bd.guardar_configuracion("contacto_email", email)
             bd.guardar_configuracion("quienes_somos", quienes_somos)
+            for archivo in imagenes_nuevas:
+                url, public_id = gallery.subir_imagen(archivo, carpeta="torneo_baloncesto/quienes_somos")
+                bd.crear_quienes_somos_imagen(url, public_id)
             st.success("Configuración guardada.")
             st.rerun()
 

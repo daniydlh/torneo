@@ -27,7 +27,6 @@ def _limpiar_cache():
     obtener_fotos.clear()
     obtener_configuracion.clear()
     obtener_djs.clear()
-    obtener_quienes_somos_imagenes.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -199,26 +198,4 @@ def actualizar_dj(id_dj: int, **campos) -> None:
 def eliminar_dj(id_dj: int) -> None:
     cliente = obtener_cliente()
     cliente.table("djs").delete().eq("id", id_dj).execute()
-    _limpiar_cache()
-
-
-# ---------------------------------------------------------------------------
-# IMÁGENES DE "¿QUIÉNES SOMOS?" (galería de varias fotos del torneo)
-# ---------------------------------------------------------------------------
-
-@st.cache_data(ttl=30)
-def obtener_quienes_somos_imagenes() -> list[dict]:
-    cliente = obtener_cliente()
-    return cliente.table("quienes_somos_imagenes").select("*").order("creado_en").execute().data
-
-
-def crear_quienes_somos_imagen(url: str, public_id: str) -> None:
-    cliente = obtener_cliente()
-    cliente.table("quienes_somos_imagenes").insert({"url": url, "public_id": public_id}).execute()
-    _limpiar_cache()
-
-
-def eliminar_quienes_somos_imagen(id_imagen: int) -> None:
-    cliente = obtener_cliente()
-    cliente.table("quienes_somos_imagenes").delete().eq("id", id_imagen).execute()
     _limpiar_cache()
