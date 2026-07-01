@@ -19,7 +19,7 @@ import gallery
 
 @st.cache_data
 def _logo_base64() -> str:
-    with open("assets/logo_noback.png", "rb") as f:
+    with open("assets/logo.png", "rb") as f:
         return base64.b64encode(f.read()).decode()
 
 
@@ -126,8 +126,9 @@ def pagina_inicio(config: dict):
         ("🏀 Clasificación Masc.", "masculino"), ("🏀 Clasificación Fem.", "femenino"),
         ("🎧 Torneo DJs", "djs"), ("📸 Sube tu foto!", "galeria"),
     ]
+    mitad = (len(accesos) + 1) // 2
     for i, (etiqueta, destino) in enumerate(accesos):
-        with columnas[i % 2]:
+        with columnas[0 if i < mitad else 1]:
             if st.button(etiqueta, key=f"acceso_{destino}", use_container_width=True):
                 ir_a(destino)
                 st.rerun()
