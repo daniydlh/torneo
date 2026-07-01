@@ -52,7 +52,6 @@ hr{ border-color: var(--tarjeta-borde); }
 }
 .cabecera-app img{
     width:84px; height:84px; border-radius:20px;
-    box-shadow: var(--sombra);
 }
 
 /* ---------- Tarjetas genéricas ---------- */
@@ -231,5 +230,5 @@ button[kind="secondary"]{
 /* Quitar el padding-top extra en pantallas móviles */
 @media (max-width: 640px){
     .block-container{ padding-left: .8rem !important; padding-right: .8rem !important; }
-    .cabecera-app img{ width:300px; height:300px; }
+    .cabecera-app img{ width:400px; height:400px; }
 }
